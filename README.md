@@ -2,6 +2,8 @@
 
 为VSCode/AIoT-IDE打造的, 优化Xiaomi Vela JS App开发体验的插件.
 
+交流: 856920929
+
 ## Features
 
  - 路由视图(查看页面树, 并轻松创建新页面而无需编辑Manifest)
