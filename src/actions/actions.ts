@@ -1,32 +1,33 @@
-import path from 'path';
 import * as vscode from 'vscode';
+import * as path from 'path';
 
-export class ActionViewPanel {
-  private panel: vscode.WebviewPanel | undefined;
-  private extensionPath: string;
+export class ActionsViewProvider implements vscode.WebviewViewProvider {
+  private _view?: vscode.WebviewView;
 
-  constructor(context: vscode.ExtensionContext) {
-    this.panel = undefined;
-    this.extensionPath = context.extensionPath;
-  }
+  constructor(private context: vscode.ExtensionContext) {}
 
-  public createOrShowPanel(): void {
-    if (this.panel) {
-      this.panel.reveal(vscode.ViewColumn.One);
-    } else {
-      this.panel = vscode.window.createWebviewPanel(
-        'componentManager', // Webview id
-        'Component Manager', // Webview title
-        vscode.ViewColumn.One, // 编辑器列
-        {
-          enableScripts: true,
-          localResourceRoots: [vscode.Uri.file(path.join(this.extensionPath, 'media'))]
-        }
-      );
+  resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, token: vscode.CancellationToken): void {
+    this._view = webviewView;
 
-      // 绑定 Webview 内容
-      this.panel.webview.html = this.getWebviewContent();
-    }
+    // 允许 Webview 执行脚本
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [
+        vscode.Uri.file(path.join(this.context.extensionPath, 'media'))
+      ]
+    };
+
+    // 设置 Webview 内容
+    webviewView.webview.html = this.getWebviewContent();
+
+    // 在 Webview 中执行 JavaScript
+    webviewView.webview.onDidReceiveMessage((message) => {
+      switch (message.command) {
+        case 'addComponent':
+          vscode.window.showInformationMessage('Component added!');
+          break;
+      }
+    });
   }
 
   private getWebviewContent(): string {
@@ -38,7 +39,12 @@ export class ActionViewPanel {
     </head>
     <body>
         <h1>Manage your Components</h1>
-        <button onclick="alert('Add Component')">Add New Component</button>
+        <button onclick="addComponent()">Add New Component</button>
+        <script>
+            function addComponent() {
+                vscode.postMessage({ command: 'addComponent' });
+            }
+        </script>
     </body>
     </html>`;
   }
