@@ -71,7 +71,8 @@ async function addSubmodule(repo?: string, localPath?: string, name?: string) {
   }
 
   console.log(chalk.cyan(`📦 添加子模块 ${name}...`));
-  await git.subModuleAdd(repo!, localPath!);
+  // simple-git 不提供 subModuleAdd，使用 subModule([...]) 传命令数组
+  await git.subModule(["add", repo!, localPath!]);
 
   // 询问构建目录
   const { dist, copyToMedia } = await inquirer.prompt<{ dist: string; copyToMedia: boolean }>([
